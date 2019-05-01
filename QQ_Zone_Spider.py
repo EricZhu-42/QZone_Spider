@@ -1,6 +1,5 @@
 # -*-coding:utf-8-*-
 
-
 #-------------------initialize----------------------
 import json
 import multiprocessing
@@ -27,7 +26,7 @@ session = requests.session()
 """
 #-------------------config----------------------
 
-qq_id = 1845056509
+qq_id = 2074934525 #Change it if necessary.
 process_number = 8
 page_number = 0
 
@@ -46,10 +45,10 @@ def get_msg_list(url:str,headers,qzone_cookies):
 def get_total(url:str,headers,qzone_cookies):
     return json.loads(session.get(url,headers=headers,cookies=qzone_cookies).text[17:-2])['total']
 
-def construct_url_list(prefix:str,surfix:str,times:int):
+def construct_url_list(prefix:str,suffix:str,times:int):
     url_list = list()
     for i in range(0,times):
-        url_list.append(prefix+str(i*20)+surfix)
+        url_list.append(prefix+str(i*20)+suffix)
     return url_list
 
 def ini_driver():
@@ -61,8 +60,8 @@ def ini_driver():
 def get_format(data:str):
     pos = data.find('pos=')
     prefix = file_prefix + data[:pos+4]
-    surfix = data[pos+5:]
-    return (prefix,surfix)
+    suffix = data[pos+5:]
+    return (prefix,suffix)
 
 def process_raw_msglist(raw_msglist:dict):
     if raw_msglist is not None:
@@ -115,11 +114,11 @@ if __name__ == '__main__':
     driver.quit()
 
     data = re.findall(pattern,log)[0]
-    prefix,surfix = get_format(data)
+    prefix,suffix = get_format(data)
 
     if page_number == 0:
-        page_number = ceil(get_total(prefix+"0"+surfix,headers,qzone_cookies)/20)
-    url_list = construct_url_list(prefix,surfix,page_number)
+        page_number = ceil(get_total(prefix+"0"+suffix,headers,qzone_cookies)/20)
+    url_list = construct_url_list(prefix,suffix,page_number)
     pos_pool = multiprocessing.Pool(processes=process_number)
 
     for url in url_list:
@@ -131,6 +130,6 @@ if __name__ == '__main__':
     print('Done')
 
     with open("D:/Desk/Coding/Py/Spider/{}.json".format(qq_id),'w+',encoding='utf-8') as f:
-            f.write(json.dumps(msglist,indent=4,ensure_ascii=False))
+        f.write(json.dumps(msglist,indent=4,ensure_ascii=False))
 
 #-------------------main----------------------
