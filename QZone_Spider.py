@@ -20,10 +20,7 @@ msglist = dict()
 session = requests.session()
 
 #-------------------initialize----------------------
-"""
-权服侠 2461908536
-表白墙 2074934525
-"""
+
 #-------------------config----------------------
 
 qq_id = 2074934525 #Change it if necessary.
