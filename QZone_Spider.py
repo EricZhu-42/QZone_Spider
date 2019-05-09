@@ -1,6 +1,7 @@
 # -*-coding:utf-8-*-
 
 #-------------------initialize----------------------
+import os.path
 import json
 import multiprocessing
 import re
@@ -25,7 +26,6 @@ session = requests.session()
 
 qq_id = 2074934525 #Change it if necessary.
 process_number = 8
-page_number = 0
 
 login_url = 'https://user.qzone.qq.com'
 target_url = 'https://user.qzone.qq.com/{}/311'.format(qq_id)
@@ -75,6 +75,15 @@ def process_raw_msglist(raw_msglist:dict):
                                 'name' : comment['name']
                         }
                     )
+            pic_source = msg.get('pic',None)
+            if pic_source is not None:
+                pic_list = list()
+                for pic in pic_source:
+                    pic_id = pic.get('pic_id',str())
+                    if pic_id.startswith("http"):
+                        pic_list.append(pic_id)
+                if len(pic_list)>0:
+                    new_msg['piclist'] = pic_list
             msglist[msg['created_time']] = new_msg
         global counter,page_number
         counter += 1
@@ -126,7 +135,8 @@ if __name__ == '__main__':
     pos_pool.join()
     print('Done')
 
-    with open("D:/Desk/Coding/Py/Spider/{}.json".format(qq_id),'w+',encoding='utf-8') as f:
+    local_path = os.path.split(__file__)[0]
+    with open(os.path.join(local_path,r"data\{}.json".format(qq_id)),'w+',encoding='utf-8') as f:
         f.write(json.dumps(msglist,indent=4,ensure_ascii=False))
 
 #-------------------main----------------------
