@@ -134,6 +134,7 @@ if __name__ == '__main__':
     pos_pool.close()
     pos_pool.join()
     print('Done')
+    print('Success, length of msglist is {}.'.format(len(msglist)))
 
     local_path = os.path.split(__file__)[0]
     with open(os.path.join(local_path,r"data\{}.json".format(qq_id)),'w+',encoding='utf-8') as f:
