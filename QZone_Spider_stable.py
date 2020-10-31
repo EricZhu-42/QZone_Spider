@@ -146,7 +146,7 @@ if __name__ == '__main__':
         dat = get_msg_list(url, headers, qzone_cookies)
         process_raw_msglist(dat)
         processed += 1
-        if (time_gap_limit) > 0 and (start_time - list(msglist.keys())[-1] >= time_gap_limit):
+        if (time_gap_limit > 0) and (start_time - list(msglist.keys())[-1] >= time_gap_limit):
             break
 
     local_path = os.path.split(__file__)[0]
