@@ -1,5 +1,9 @@
 # QZone_Spider
 
+新增数据字段：点赞数、浏览量、转发数、tid
+
+TODO：规避反爬系统，并改进为多线程爬虫。
+
 本项目为一个QQ空间说说获取爬虫，基于Python。  
 This is a Python-based spider to get data from qzone.com  
 

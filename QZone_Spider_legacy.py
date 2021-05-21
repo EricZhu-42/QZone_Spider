@@ -4,12 +4,13 @@
 @Author：zhuxinhao00@gmail.com
 @Create date: 2019/05/09
 @Modified date: 2020/09/14
-@description: A script to get messages from qzone.com; single-processed version, more stable.
+@description: A script to get messages from qzone.com
 """
 
 #-------------------initialize----------------------
 import os.path
 import json
+import multiprocessing
 import re
 from time import sleep,time
 from math import ceil
@@ -19,9 +20,8 @@ from selenium import webdriver
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.chrome.options import Options
 
-global counter, page_number, g_tk
+global counter,page_number
 counter = 0
 page_number = 0
 msglist = dict()
@@ -31,16 +31,14 @@ session = requests.session()
 
 #-------------------config----------------------
 
-qq_id = 2074934525 # Change it if necessary.
-max_pages = 200 # 0 for unlimited. If limited, fetching breaks after fetching $max_pages$ pages.
-time_gap_limit = 1 * 24 * 60 * 60 # 0 for unlimited. If limited, fetching breaks when geting messages older than time gap (in seconds).
+qq_id = 2074934525 #Change it if necessary.
+process_number = 8
 
 login_url = 'https://user.qzone.qq.com'
 target_url = 'https://user.qzone.qq.com/{}/311'.format(qq_id)
 pattern = re.compile(r'"https://user.qzone.qq.com/proxy/domain/taotao.qq.com/cgi-bin/emotion_cgi_msglist_v6(.*?)"')
 file_prefix = r"https://user.qzone.qq.com/proxy/domain/taotao.qq.com/cgi-bin/emotion_cgi_msglist_v6"
 User_Agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.108 Safari/537.36'
-
 #-------------------config----------------------
 
 #-------------------func_def----------------------
@@ -60,10 +58,7 @@ def construct_url_list(prefix:str,suffix:str,times:int):
 def ini_driver():
     caps = DesiredCapabilities.CHROME
     caps['loggingPrefs'] = {'performance': 'ALL'}
-
-    chrome_options = Options()
-    chrome_options.add_experimental_option('w3c', False)
-    driver = webdriver.Chrome(desired_capabilities=caps, options=chrome_options)
+    driver = webdriver.Chrome(desired_capabilities=caps)
     return driver
 
 def get_format(data:str):
@@ -74,21 +69,9 @@ def get_format(data:str):
 
 def process_raw_msglist(raw_msglist:dict):
     if raw_msglist is not None:
-        global g_tk
-        url = r'https://user.qzone.qq.com/proxy/domain/r.qzone.qq.com/cgi-bin/user/qz_opcnt2?g_tk={}&fupdate=1&unikey='.format(g_tk)
         for msg in raw_msglist:
-            url += r'http://user.qzone.qq.com/{}/mood/{}%3C|%3E'.format(qq_id, msg['tid'])
-        metadata = json.loads(session.get(url[:-7], headers=headers).text[10:-2])['data']
-
-        for index, msg in enumerate(raw_msglist):
             new_msg = dict()
             new_msg['content'] = msg['content']
-            new_msg['tid'] = msg['tid']
-
-            new_msg['num_like'] = metadata[index]['current']['newdata']['LIKE']
-            new_msg['num_read'] = metadata[index]['current']['newdata']['PRD']
-            new_msg['num_comment'] = metadata[index]['current']['newdata']['CS']
-
             new_msg['commentlist'] = list()
             if msg['commentlist'] is not None:
                 for comment in msg['commentlist']:
@@ -109,7 +92,6 @@ def process_raw_msglist(raw_msglist:dict):
                 if len(pic_list)>0:
                     new_msg['piclist'] = pic_list
             msglist[msg['created_time']] = new_msg
-
         global counter,page_number
         counter += 1
         if counter>20:
@@ -146,31 +128,23 @@ if __name__ == '__main__':
 
     data = re.findall(pattern,log)[0]
     prefix,suffix = get_format(data)
-    global g_tk
-    g_tk = re.findall(r'g_tk=(.*?)&', suffix)[0]
 
     if page_number == 0:
         page_number = ceil(get_total(prefix+"0"+suffix,headers,qzone_cookies)/20)
-
-    if max_pages > 0:
-        page_number = min(page_number, max_pages)
     url_list = construct_url_list(prefix,suffix,page_number)
+    pos_pool = multiprocessing.Pool(processes=process_number)
 
-    start_time = time()
-    processed = 0
     for url in url_list:
-        dat = get_msg_list(url, headers, qzone_cookies)
-        process_raw_msglist(dat)
-        processed += 1
-        if (time_gap_limit > 0) and (start_time - list(msglist.keys())[-1] >= time_gap_limit):
-            break
+        pos_pool.apply_async(get_msg_list,args=(url,headers,qzone_cookies),callback=process_raw_msglist)
+    print("Start")
+    start_time = time()
+    pos_pool.close()
+    pos_pool.join()
+    print('Done')
+    print('Success, length of msglist is {}.'.format(len(msglist)))
 
     local_path = os.path.split(__file__)[0]
-    filename = os.path.join(local_path,r"data\{:d}_{:d}.json".format(qq_id, int(start_time)))
-    with open(filename,'w+',encoding='utf-8') as f:
+    with open(os.path.join(local_path,r"data\{}.json".format(qq_id)),'w+',encoding='utf-8') as f:
         f.write(json.dumps(msglist,indent=4,ensure_ascii=False))
-
-    print("Data saved to", filename)
-    print("Done!")
 
 #-------------------main----------------------
