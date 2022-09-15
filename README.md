@@ -22,5 +22,5 @@ Here are descriptions about functions of files in this project.
 	获取的部分公开空间的说说内容  
 	Some data obtained from public Qzones  
 
-关于具体的项目描述与实现过程，请参考[教程](https://ericzhu-42.github.io/2019/05/01/QQ-Zone-Spider/)。  
-For detailed descriptions, please visit [this tutorial](https://ericzhu-42.github.io/2019/05/01/QQ-Zone-Spider/). (Chinese version)  
+关于具体的项目描述与实现过程，请参考[教程](tutorial.md)。  
+For detailed descriptions, please visit [this tutorial](tutorial.md). (Chinese version)  
