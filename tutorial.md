@@ -3,8 +3,8 @@
 ### 功能简介
 本教程利用Python实现了一个简单的QQ空间说说抓取脚本。该脚本以每秒150~200条的速度抓取好友的历史说说，并将其格式化后存储至本地。
 
-![04](misc\04.png)
-![04](misc\05.png)
+![04](https://github.com/EricZhu-42/QZone_Spider/blob/master/misc/04.png)
+![05](https://github.com/EricZhu-42/QZone_Spider/blob/master/misc/05.png)
 
 <!-- more -->
 
@@ -54,11 +54,11 @@
 
 我们打开Chrome浏览器的**开发者工具**，切换到**Network**标签页。此时我们可以获得交互过程中加载的所有资源。为了减少干扰，我们点击Network标签页下的**Clear**按钮，并在说说页面中切换到下一页。
 
-![02](misc\02.png)
+![02](https://github.com/EricZhu-42/QZone_Spider/blob/master/misc/02.png)
 
 右侧列表中列出了翻页过程中加载的资源。在排除了无关的图片文件后，我们可以发现说说内容保存在名称为`emotion_cgi_msglist_v6`的文件中。该文件即为我们要获得的说说数据。
 
-![03](misc\03.png)
+![03](https://github.com/EricZhu-42/QZone_Spider/blob/master/misc/03.png)
 
 ### 找到请求模式
 
